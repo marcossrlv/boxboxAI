@@ -1,0 +1,262 @@
+{
+  "name": "Bahrain Grand Prix",
+  "year": 2024,
+  "total_laps": 57,
+  "pole_time": 89.165,
+  "tire_coefficients": {
+    "MEDIUM": [
+      0.002,
+      0.015,
+      0.6
+    ],
+    "HARD": [
+      0.038559,
+      -1.142973,
+      15.011113
+    ],
+    "SOFT": [
+      0.028701,
+      -0.713771,
+      12.237683
+    ]
+  },
+  "qualifying_results": [
+    [
+      0,
+      89.165,
+      "Charles Leclerc"
+    ],
+    [
+      1,
+      89.179,
+      "Max Verstappen"
+    ],
+    [
+      2,
+      89.485,
+      "George Russell"
+    ],
+    [
+      3,
+      89.507,
+      "Carlos Sainz"
+    ],
+    [
+      4,
+      89.537,
+      "Sergio Perez"
+    ],
+    [
+      5,
+      89.542,
+      "Fernando Alonso"
+    ],
+    [
+      6,
+      89.614,
+      "Lando Norris"
+    ],
+    [
+      7,
+      89.683,
+      "Oscar Piastri"
+    ],
+    [
+      8,
+      89.71,
+      "Lewis Hamilton"
+    ],
+    [
+      9,
+      89.851,
+      "Nico Hulkenberg"
+    ],
+    [
+      10,
+      89.965,
+      "Lance Stroll"
+    ],
+    [
+      11,
+      90.129,
+      "Yuki Tsunoda"
+    ],
+    [
+      12,
+      90.221,
+      "Alexander Albon"
+    ],
+    [
+      13,
+      90.278,
+      "Daniel Ricciardo"
+    ],
+    [
+      14,
+      90.529,
+      "Kevin Magnussen"
+    ],
+    [
+      15,
+      90.756,
+      "Valtteri Bottas"
+    ],
+    [
+      16,
+      90.757,
+      "Guanyu Zhou"
+    ],
+    [
+      17,
+      90.77,
+      "Logan Sargeant"
+    ],
+    [
+      18,
+      90.793,
+      "Esteban Ocon"
+    ],
+    [
+      19,
+      90.948,
+      "Pierre Gasly"
+    ]
+  ],
+  "opponent_strategies": {
+    "19": [
+      {
+        "in_lap": 13,
+        "tire_type": "HARD"
+      },
+      {
+        "in_lap": 44,
+        "tire_type": "SOFT"
+      }
+    ],
+    "4": [
+      {
+        "in_lap": 13,
+        "tire_type": "HARD"
+      },
+      {
+        "in_lap": 37,
+        "tire_type": "SOFT"
+      }
+    ],
+    "5": [
+      {
+        "in_lap": 16,
+        "tire_type": "HARD"
+      }
+    ],
+    "1": [
+      {
+        "in_lap": 12,
+        "tire_type": "HARD"
+      }
+    ],
+    "11": [
+      {
+        "in_lap": 10,
+        "tire_type": "HARD"
+      }
+    ],
+    "17": [
+      {
+        "in_lap": 11,
+        "tire_type": "HARD"
+      },
+      {
+        "in_lap": 41,
+        "tire_type": "SOFT"
+      }
+    ],
+    "14": [
+      {
+        "in_lap": 12,
+        "tire_type": "HARD"
+      }
+    ],
+    "10": [
+      {
+        "in_lap": 15,
+        "tire_type": "HARD"
+      }
+    ],
+    "12": [
+      {
+        "in_lap": 16,
+        "tire_type": "HARD"
+      }
+    ],
+    "16": [
+      {
+        "in_lap": 10,
+        "tire_type": "HARD"
+      }
+    ],
+    "9": [
+      {
+        "in_lap": 2,
+        "tire_type": "HARD"
+      },
+      {
+        "in_lap": 42,
+        "tire_type": "SOFT"
+      }
+    ],
+    "13": [
+      {
+        "in_lap": 14,
+        "tire_type": "HARD"
+      },
+      {
+        "in_lap": 36,
+        "tire_type": "SOFT"
+      }
+    ],
+    "18": [
+      {
+        "in_lap": 11,
+        "tire_type": "HARD"
+      }
+    ],
+    "6": [
+      {
+        "in_lap": 14,
+        "tire_type": "HARD"
+      }
+    ],
+    "8": [
+      {
+        "in_lap": 13,
+        "tire_type": "HARD"
+      }
+    ],
+    "3": [
+      {
+        "in_lap": 15,
+        "tire_type": "HARD"
+      }
+    ],
+    "2": [
+      {
+        "in_lap": 12,
+        "tire_type": "HARD"
+      }
+    ],
+    "15": [
+      {
+        "in_lap": 13,
+        "tire_type": "HARD"
+      }
+    ],
+    "7": [
+      {
+        "in_lap": 13,
+        "tire_type": "HARD"
+      }
+    ]
+  },
+  "base_overtaking_prob": 0.0558
+}

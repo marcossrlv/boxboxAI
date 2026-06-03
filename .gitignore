@@ -1,0 +1,47 @@
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# FastF1 data cache
+.fastf1_cache/
+
+# Simulation logs & Tensorboard metrics
+logs/
+race_tensorboard/
+*.log
+
+# Generated trained models and plots (outputs)
+race_agent_ppo.zip
+training_progress.png
+
+# OS metadata & IDE configs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

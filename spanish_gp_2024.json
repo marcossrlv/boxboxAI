@@ -1,0 +1,314 @@
+{
+  "name": "Spanish Grand Prix",
+  "year": 2024,
+  "total_laps": 66,
+  "pole_time": 71.383,
+  "tire_coefficients": {
+    "HARD": [
+      0.017911,
+      -0.681027,
+      14.365859
+    ],
+    "SOFT": [
+      0.028686,
+      -0.836173,
+      14.962614
+    ],
+    "MEDIUM": [
+      0.027586,
+      -0.857915,
+      15.334597
+    ]
+  },
+  "qualifying_results": [
+    [
+      0,
+      71.383,
+      "Lando Norris"
+    ],
+    [
+      1,
+      71.403,
+      "Max Verstappen"
+    ],
+    [
+      2,
+      71.701,
+      "Lewis Hamilton"
+    ],
+    [
+      3,
+      71.703,
+      "George Russell"
+    ],
+    [
+      4,
+      71.731,
+      "Charles Leclerc"
+    ],
+    [
+      5,
+      71.736,
+      "Carlos Sainz"
+    ],
+    [
+      6,
+      71.857,
+      "Pierre Gasly"
+    ],
+    [
+      7,
+      72.011,
+      "Oscar Piastri"
+    ],
+    [
+      8,
+      72.054,
+      "Sergio Perez"
+    ],
+    [
+      9,
+      72.109,
+      "Esteban Ocon"
+    ],
+    [
+      10,
+      72.128,
+      "Fernando Alonso"
+    ],
+    [
+      11,
+      72.227,
+      "Valtteri Bottas"
+    ],
+    [
+      12,
+      72.31,
+      "Nico Hulkenberg"
+    ],
+    [
+      13,
+      72.372,
+      "Lance Stroll"
+    ],
+    [
+      14,
+      72.738,
+      "Guanyu Zhou"
+    ],
+    [
+      15,
+      72.937,
+      "Kevin Magnussen"
+    ],
+    [
+      16,
+      72.985,
+      "Yuki Tsunoda"
+    ],
+    [
+      17,
+      73.075,
+      "Daniel Ricciardo"
+    ],
+    [
+      18,
+      73.153,
+      "Alexander Albon"
+    ],
+    [
+      19,
+      73.509,
+      "Logan Sargeant"
+    ]
+  ],
+  "opponent_strategies": {
+    "1": [
+      {
+        "in_lap": 18,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 45,
+        "tire_type": "SOFT"
+      }
+    ],
+    "6": [
+      {
+        "in_lap": 15,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 39,
+        "tire_type": "HARD"
+      }
+    ],
+    "10": [
+      {
+        "in_lap": 32,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 50,
+        "tire_type": "SOFT"
+      }
+    ],
+    "9": [
+      {
+        "in_lap": 20,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 46,
+        "tire_type": "HARD"
+      }
+    ],
+    "4": [
+      {
+        "in_lap": 25,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 48,
+        "tire_type": "SOFT"
+      }
+    ],
+    "13": [
+      {
+        "in_lap": 18,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 38,
+        "tire_type": "HARD"
+      }
+    ],
+    "18": [
+      {
+        "in_lap": 15,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 35,
+        "tire_type": "HARD"
+      }
+    ],
+    "15": [
+      {
+        "in_lap": 11,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 30,
+        "tire_type": "HARD"
+      }
+    ],
+    "16": [
+      {
+        "in_lap": 10,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 28,
+        "tire_type": "HARD"
+      },
+      {
+        "in_lap": 45,
+        "tire_type": "SOFT"
+      }
+    ],
+    "19": [
+      {
+        "in_lap": 19,
+        "tire_type": "SOFT"
+      }
+    ],
+    "14": [
+      {
+        "in_lap": 10,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 42,
+        "tire_type": "HARD"
+      }
+    ],
+    "12": [
+      {
+        "in_lap": 13,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 39,
+        "tire_type": "HARD"
+      }
+    ],
+    "17": [
+      {
+        "in_lap": 17,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 43,
+        "tire_type": "HARD"
+      }
+    ],
+    "7": [
+      {
+        "in_lap": 14,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 38,
+        "tire_type": "HARD"
+      }
+    ],
+    "2": [
+      {
+        "in_lap": 17,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 44,
+        "tire_type": "SOFT"
+      }
+    ],
+    "5": [
+      {
+        "in_lap": 16,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 37,
+        "tire_type": "HARD"
+      }
+    ],
+    "3": [
+      {
+        "in_lap": 16,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 37,
+        "tire_type": "HARD"
+      }
+    ],
+    "11": [
+      {
+        "in_lap": 29,
+        "tire_type": "HARD"
+      }
+    ],
+    "8": [
+      {
+        "in_lap": 22,
+        "tire_type": "MEDIUM"
+      },
+      {
+        "in_lap": 47,
+        "tire_type": "SOFT"
+      }
+    ]
+  },
+  "base_overtaking_prob": 0.0899
+}
