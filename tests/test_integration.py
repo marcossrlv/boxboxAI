@@ -23,7 +23,7 @@ from race_config import load_gp_from_json, setup_real_race
 # ── Helpers ────────────────────────────────────────────────────────────────────
 PASS = "[PASS]"
 FAIL = "[FAIL]"
-JSON_PATH = Path(__file__).parent.parent / "spanish_gp_2024.json"
+JSON_PATH = Path(__file__).parent.parent / "data" / "spanish_gp_2024.json"
 
 errors = []
 

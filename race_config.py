@@ -38,7 +38,12 @@ def load_gp_from_json(json_path: str | Path) -> dict:
     """
     path = Path(json_path)
     if not path.exists():
-        raise FileNotFoundError(f"No se encontró el archivo de datos: {path}")
+        # Intentar buscar en la carpeta 'data/' relativa al directorio de race_config.py
+        alt_path = Path(__file__).parent / "data" / path.name
+        if alt_path.exists():
+            path = alt_path
+        else:
+            raise FileNotFoundError(f"No se encontró el archivo de datos: {path} (tampoco en {alt_path})")
 
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)

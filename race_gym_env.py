@@ -38,6 +38,7 @@ class RaceGymEnv(gym.Env):
         self.render_mode = render_mode
         self.race = setup_real_race(gp_data)
         self.num_competitors = len(self.race.cars) - 1
+        self.num_cars = len(self.race.cars)
 
         # Focus on first car as the agent
         self.agent_car_id = 0
@@ -245,7 +246,7 @@ class RaceGymEnv(gym.Env):
         
         # Simple text rendering
         print(f"\n=== Race Step {self.race.time_step} (Lap {self.agent_car.lap}) ===")
-        print(f"Agent Car (ID: {self.agent_car_id}):")
+        print(f"Agent Car ({self.agent_car.driver_name}):")
         print(f"  Lap Time: {self.agent_car.current_lap_time:.2f} seconds")
         print(f"  Total Time: {self.agent_car.total_time:.2f} seconds")
         print(f"  Lap: {self.agent_car.lap}/{self.race.track.laps}")

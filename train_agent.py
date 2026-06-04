@@ -10,6 +10,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from race_gym_env import RaceGymEnv, register_race_env
 from race_config import load_gp_from_json
 import matplotlib.pyplot as plt
+from evaluate_agent import evaluate_model
 
 
 class TrainingCallback(BaseCallback):
@@ -72,55 +73,6 @@ class TrainingCallback(BaseCallback):
         }
 
 
-def evaluate_model(model, env, n_episodes):
-    """Evaluate trained model"""
-    episode_rewards = []
-    episode_lengths = []
-    episode_positions = []
-    wins = 0
-    
-    for episode in range(n_episodes):
-        obs, info = env.reset()
-        total_reward = 0
-        steps = 0
-        
-        while True:
-            action, _states = model.predict(obs, deterministic=False)
-            obs, reward, terminated, truncated, info = env.step(action)
-            
-            total_reward += reward
-            steps += 1
-            
-            if terminated or truncated:
-                # Find agent's final position
-                final_state = info.get('race_state', {})
-                leaderboard = final_state.get('leaderboard_by_time', [])
-                try:
-                    rank = [car_id for car_id, _ in leaderboard].index(env.agent_car_id) + 1
-                except ValueError:
-                    rank = env.num_cars  # fallback
-                episode_positions.append(rank)
-                
-                if info.get('winner') == 0:  # Agent won
-                    wins += 1
-                break
-        
-        episode_rewards.append(total_reward)
-        episode_lengths.append(steps)
-        
-        print(f"Eval Episode {episode + 1}: Position={episode_positions[-1]}, Reward={total_reward:.2f}, Steps={steps}")
-    
-    print(f"\nEvaluation Results:")
-    print(f"Average Final Position: {np.mean(episode_positions):.1f} ± {np.std(episode_positions):.2f}")
-    print(f"Average Reward: {np.mean(episode_rewards):.2f} ± {np.std(episode_rewards):.2f}")
-    print(f"Win Rate: {wins}/{n_episodes} ({wins/n_episodes*100:.1f}%)")
-    
-    return episode_rewards, episode_lengths, episode_positions
-
-
-
-
-
 def plot_training_progress(callback):
     """Plot training progress"""
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
@@ -154,7 +106,7 @@ def main():
     
     # Load real GP data
     try:
-        gp_data = load_gp_from_json("spanish_gp_2024.json")
+        gp_data = load_gp_from_json("data/spanish_gp_2024.json")
         print("Loaded real GP data: Spanish GP 2024")
     except Exception as e:
         print(f"Warning: Could not load real GP data: {e}. Using synthetic fallback.")
@@ -193,7 +145,7 @@ def main():
     
     # Train the model
     print("Training started...")
-    model.learn(total_timesteps=200000, callback=callback)
+    model.learn(total_timesteps=500000, callback=callback)
     print("Training completed!")
     
     # Save the model
@@ -205,7 +157,7 @@ def main():
     
     # Evaluate the trained model
     print("\nEvaluating trained model...")
-    eval_rewards, eval_lengths, eval_positions = evaluate_model(model, env, n_episodes=20)
+    eval_rewards, eval_lengths, eval_positions = evaluate_model(model, env, n_episodes=20, deterministic=False)
     
 
     
@@ -217,7 +169,7 @@ def test_environment():
     print("Testing Race Environment...")
     
     try:
-        gp_data = load_gp_from_json("spanish_gp_2024.json")
+        gp_data = load_gp_from_json("data/spanish_gp_2024.json")
         print("Loaded real GP data for testing.")
     except Exception as e:
         print(f"Warning: Could not load real GP data: {e}. Using synthetic fallback.")

@@ -341,9 +341,17 @@ def main():
     # Nombre de archivo por defecto
     if args.output is None:
         slug = args.gp.lower().replace(" ", "_")
-        args.output = f"{slug}_{args.year}.json"
+        args.output = f"data/{slug}_{args.year}.json"
 
-    output_path = Path(__file__).parent / args.output
+    output_path = Path(args.output)
+    if not output_path.is_absolute():
+        if not args.output.startswith("data/") and not args.output.startswith("data\\"):
+            output_path = Path(__file__).parent / "data" / args.output
+        else:
+            output_path = Path(__file__).parent / args.output
+
+    # Asegurar que el directorio existe
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
         gp_data = build_gp_data(year=args.year, gp=args.gp)

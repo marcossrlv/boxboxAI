@@ -3,7 +3,7 @@ from race_config import load_gp_from_json
 from race_gym_env import RaceGymEnv
 from simulation_logger import SimulationLogger
 
-gp = load_gp_from_json("spanish_gp_2024.json")
+gp = load_gp_from_json("data/spanish_gp_2024.json")
 logger = SimulationLogger(gp_name="Spanish GP 2024", run_id="test_run")
 env = RaceGymEnv(gp_data=gp, logger=logger)
 
