@@ -255,6 +255,9 @@ def build_gp_data(year: int, gp: str) -> dict:
     # ── Estrategias observadas ─────────
     opponent_strategies = extract_opponent_strategies(race)
 
+    # ── Resultados reales ──────────────
+    real_results = extract_real_results(race)
+
     # ── Probabilidad de adelantamiento ──
     base_overtaking_prob = calculate_overtaking_probability(race)
 
@@ -266,8 +269,89 @@ def build_gp_data(year: int, gp: str) -> dict:
         "tire_coefficients": tire_coefficients,
         "qualifying_results": qualy_results,
         "opponent_strategies": opponent_strategies,
+        "real_results": real_results,
         "base_overtaking_prob": base_overtaking_prob,
     }
+
+
+def extract_real_results(race_session) -> dict[str, dict]:
+    """
+    Extrae los resultados reales de carrera y las estrategias para cada piloto.
+    El dict devuelto mapea car_id (como string) a un dict con:
+      - driver_name
+      - grid_position
+      - final_position
+      - status
+      - total_time_seconds
+      - strategy
+    """
+    laps = race_session.laps
+    results = race_session.results
+
+    # Mapa driver_number → grid_position (0-indexed)
+    driver_grid: dict[str, int] = {}
+    for _, row in results.iterrows():
+        grid = int(row.get("GridPosition", 0))
+        driver_grid[str(row["DriverNumber"])] = max(0, grid - 1)
+
+    real_results = {}
+
+    # Encontrar tiempo del ganador de la carrera (primer piloto clasificado que no sea DNF)
+    winner_row = results[results["Position"] == 1.0]
+    winner_time_s = 0.0
+    if not winner_row.empty:
+        w_time = winner_row.iloc[0]["Time"]
+        if not isinstance(w_time, float) and hasattr(w_time, "total_seconds"):
+            winner_time_s = w_time.total_seconds()
+
+    for _, row in results.iterrows():
+        driver_num = str(row["DriverNumber"])
+        driver_name = str(row["FullName"])
+        grid_pos = int(row["GridPosition"])
+        car_id = driver_grid.get(driver_num, -1)
+
+        if car_id < 0:
+            continue
+
+        final_pos = int(row["Position"]) if not np.isnan(row["Position"]) else 20
+        status = str(row["Status"])
+
+        # Calcular total_time_seconds
+        total_time_s = None
+        if status in ("Finished", "Lapped") or "Lap" in status:
+            if final_pos == 1:
+                total_time_s = winner_time_s
+            else:
+                row_time = row["Time"]
+                if not isinstance(row_time, float) and hasattr(row_time, "total_seconds"):
+                    total_time_s = winner_time_s + row_time.total_seconds()
+
+        # Extraer estrategia de este piloto
+        stops = []
+        driver_laps = laps[laps["DriverNumber"] == driver_num].sort_values("LapNumber")
+        prev_compound = None
+        starting_compound = None
+        for _, lap_row in driver_laps.iterrows():
+            compound = str(lap_row["Compound"]).upper()
+            lap_num = int(lap_row["LapNumber"])
+            if compound in TARGET_COMPOUNDS:
+                if starting_compound is None:
+                    starting_compound = compound
+                if prev_compound is not None and compound != prev_compound:
+                    stops.append({"in_lap": lap_num, "tire_type": compound})
+                prev_compound = compound
+
+        real_results[str(car_id)] = {
+            "driver_name": driver_name,
+            "grid_position": grid_pos,
+            "final_position": final_pos,
+            "status": status,
+            "total_time_seconds": round(total_time_s, 3) if total_time_s is not None else None,
+            "starting_compound": starting_compound,
+            "strategy": stops
+        }
+
+    return real_results
 
 
 def extract_opponent_strategies(race_session) -> dict[str, list[dict]]:

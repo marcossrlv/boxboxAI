@@ -67,6 +67,7 @@ def load_gp_from_json(json_path: str | Path) -> dict:
         "tire_coefficients": tire_coefficients,
         "qualifying_results": qualifying_results,
         "opponent_strategies": raw.get("opponent_strategies", {}),
+        "real_results": raw.get("real_results", {}),
         "base_overtaking_prob": raw.get("base_overtaking_prob"),
     }
 
