@@ -21,6 +21,7 @@ class TrainingCallback(BaseCallback):
         self.episode_rewards = []
         self.episode_lengths = []
         self.episode_positions = []
+        self.episode_timesteps = []
         self.current_episode_reward = 0
         self.current_episode_length = 0
     
@@ -33,6 +34,7 @@ class TrainingCallback(BaseCallback):
         if self.locals.get('dones')[0]:
             self.episode_rewards.append(self.current_episode_reward)
             self.episode_lengths.append(self.current_episode_length)
+            self.episode_timesteps.append(self.num_timesteps)
             
             # Find agent's final position in the race
             infos = self.locals.get('infos', [{}])
@@ -69,31 +71,90 @@ class TrainingCallback(BaseCallback):
         return {
             'episode_rewards': self.episode_rewards,
             'episode_lengths': self.episode_lengths,
-            'episode_positions': self.episode_positions
+            'episode_positions': self.episode_positions,
+            'episode_timesteps': self.episode_timesteps
         }
 
 
+def moving_average(data, window_size=50):
+    """Calculate moving average with a sliding window, keeping the output size matching the input size."""
+    data = np.asarray(data)
+    if len(data) == 0:
+        return data
+    result = np.zeros_like(data, dtype=float)
+    for i in range(len(data)):
+        start = max(0, i - window_size + 1)
+        result[i] = np.mean(data[start:i + 1])
+    return result
+
+
 def plot_training_progress(callback):
-    """Plot training progress"""
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+    """Plot training progress using matplotlib with clean and unified styling."""
+    stats = callback.get_training_stats()
+    rewards = stats['episode_rewards']
+    positions = stats['episode_positions']
+    timesteps = stats.get('episode_timesteps')
     
-    # Plot episode rewards
-    ax1.plot(callback.episode_rewards)
-    ax1.set_title('Episode Rewards During Training')
-    ax1.set_xlabel('Episode')
-    ax1.set_ylabel('Total Reward')
-    ax1.grid(True)
+    if not timesteps or len(timesteps) == 0:
+        timesteps = list(range(len(rewards)))
     
-    # Plot final positions
-    ax2.plot(callback.episode_positions)
-    ax2.set_title('Final Position During Training')
-    ax2.set_xlabel('Episode')
-    ax2.set_ylabel('Position (Lower is Better)')
-    ax2.invert_yaxis()  # 1st place at the top, 20th at the bottom
-    ax2.grid(True)
+    if len(rewards) == 0:
+        print("No training statistics available to plot.")
+        return
+        
+    # Configure matplotlib aesthetics
+    try:
+        plt.style.use('seaborn-v0_8-whitegrid')
+    except OSError:
+        try:
+            plt.style.use('seaborn-whitegrid')
+        except OSError:
+            plt.style.use('default')
+            
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 8.5), sharex=True)
     
+    # Calculate moving averages (adapt window size based on amount of data)
+    window_size = min(50, max(5, len(rewards) // 10))
+    smoothed_rewards = moving_average(rewards, window_size=window_size)
+    smoothed_positions = moving_average(positions, window_size=window_size)
+    
+    # ------------------
+    # Plot 1: Cumulative Reward Curve
+    # ------------------
+    # Raw episode rewards in a lighter color
+    ax1.plot(timesteps, rewards, color='#a1c9f4', alpha=0.4, label='Raw Episode Reward')
+    # Smoothed moving average in a thicker, darker color
+    ax1.plot(timesteps, smoothed_rewards, color='#1f77b4', linewidth=2.5, 
+             label=f'Moving Average (window={window_size})')
+    
+    ax1.set_title('Cumulative Reward Curve', fontsize=14, fontweight='bold', pad=12)
+    ax1.set_ylabel('Total Reward per Episode', fontsize=12)
+    ax1.legend(loc='lower right', frameon=True, facecolor='white', edgecolor='none')
+    ax1.grid(True, linestyle='--', alpha=0.6)
+    
+    # ------------------
+    # Plot 2: Evolution of the Average Final Position
+    # ------------------
+    # Raw final positions
+    ax2.plot(timesteps, positions, color='#ffbeb2', alpha=0.4, label='Raw Final Position')
+    # Smoothed final position
+    ax2.plot(timesteps, smoothed_positions, color='#d62728', linewidth=2.5, 
+             label=f'Moving Average (window={window_size})')
+    
+    ax2.set_title('Evolution of the Average Final Position', fontsize=14, fontweight='bold', pad=12)
+    ax2.set_xlabel('Timesteps', fontsize=12)
+    ax2.set_ylabel('Final Position (1st at Top)', fontsize=12)
+    
+    # Y-axis configuration: 1 to 20, with 1 at the top
+    ax2.set_ylim(20.5, 0.5)  # Inverted Y-axis so 1st place is at the top
+    ax2.set_yticks(range(1, 21, 2))
+    
+    ax2.legend(loc='upper right', frameon=True, facecolor='white', edgecolor='none')
+    ax2.grid(True, linestyle='--', alpha=0.6)
+    
+    # Adjust spacing and save
     plt.tight_layout()
-    plt.savefig('training_progress.png')
+    plt.savefig('training_progress.png', dpi=300)
     plt.show()
 
 
@@ -153,7 +214,7 @@ def main():
     
     # Evaluate the trained model
     print("\nEvaluating trained model...")
-    eval_rewards, eval_lengths, eval_positions = evaluate_model(model, env, n_episodes=20, deterministic=False)
+    eval_rewards, eval_lengths, eval_positions = evaluate_model(model, env, n_episodes=20, deterministic=False, gp_data=gp_data)
     
 
     
