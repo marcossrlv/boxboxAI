@@ -372,18 +372,4 @@ class Race:
             car.fuel_mass = self.fuel_model.initial_fuel_mass(self.track)
 
 
-def create_default_race(user_tire_type: Optional[TireType] = None, num_cars: int = 20) -> Race:
-    """Helper function to create a default synthetic race configuration."""
-    track = Track(laps=50, base_lap_time=90.0)
-    cars = []
-    for i in range(num_cars):
-        if i == 0 and user_tire_type is not None:
-            tire = user_tire_type
-        else:
-            tire = TireType.MEDIUM if i % 2 == 0 else TireType.HARD
-        
-        base_time = 90.0 + 0.2 * i
-        driver_name = f"Driver {i}"
-        cars.append(Car(car_id=i, initial_tire_type=tire, base_lap_time=base_time, driver_name=driver_name))
-    
-    return Race(track, cars)
+

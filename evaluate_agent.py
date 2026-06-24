@@ -274,12 +274,8 @@ def main():
     register_race_env()
     
     # Load GP data
-    try:
-        gp_data = load_gp_from_json(args.gp)
-        print(f"Loaded GP data from: {args.gp}")
-    except Exception as e:
-        print(f"Error loading GP data: {e}. Falling back to default/synthetic gp_data.")
-        gp_data = None
+    gp_data = load_gp_from_json(args.gp)
+    print(f"Loaded GP data from: {args.gp}")
         
     # Create environment
     render_mode = "human" if args.render else None

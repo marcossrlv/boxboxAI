@@ -105,12 +105,8 @@ def main():
     register_race_env()
     
     # Load real GP data
-    try:
-        gp_data = load_gp_from_json("data/spanish_gp_2024.json")
-        print("Loaded real GP data: Spanish GP 2024")
-    except Exception as e:
-        print(f"Warning: Could not load real GP data: {e}. Using synthetic fallback.")
-        gp_data = None
+    gp_data = load_gp_from_json("data/spanish_gp_2024.json")
+    print("Loaded real GP data: Spanish GP 2024")
 
     # Create environment
     env = RaceGymEnv(gp_data=gp_data)
@@ -168,12 +164,9 @@ def test_environment():
     """Test the environment without training"""
     print("Testing Race Environment...")
     
-    try:
-        gp_data = load_gp_from_json("data/spanish_gp_2024.json")
-        print("Loaded real GP data for testing.")
-    except Exception as e:
-        print(f"Warning: Could not load real GP data: {e}. Using synthetic fallback.")
-        gp_data = None
+    # Load real GP data
+    gp_data = load_gp_from_json("data/spanish_gp_2024.json")
+    print("Loaded real GP data for testing.")
         
     env = RaceGymEnv(render_mode="human", gp_data=gp_data)
     
@@ -182,7 +175,7 @@ def test_environment():
         print(f"\n=== Episode {episode + 1} ===")
         obs, info = env.reset()
         
-        for step in range(50):
+        for step in range(env.race.track.laps):
             action = 0  # Dummy action, cars move automatically
             obs, reward, terminated, truncated, info = env.step(action)
             

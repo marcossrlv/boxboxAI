@@ -7,7 +7,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 from typing import Dict, Tuple, Any, Optional
-from domain_model import Race, Car, Track, create_default_race, TireType
+from domain_model import Race, Car, Track, TireType
 from race_config import setup_real_race
 from simulation_logger import SimulationLogger
 
@@ -29,8 +29,8 @@ class RaceGymEnv(gym.Env):
     
     def __init__(
         self,
+        gp_data: dict,
         render_mode: Optional[str] = None,
-        gp_data: Optional[dict] = None,
         logger: Optional[SimulationLogger] = None,
     ):
         super().__init__()
