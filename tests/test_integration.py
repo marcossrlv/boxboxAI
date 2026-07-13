@@ -90,7 +90,7 @@ check("tire_type es string (no TireType enum)",
 # ==============================================================================
 section("2. setup_real_race() - objeto Race construido")
 
-race = setup_real_race(gp)
+race = setup_real_race(gp, agent_car_id=0)
 
 check("Devuelve instancia de Race",       isinstance(race, Race))
 check("Race.track es Track",              isinstance(race.track, Track))
@@ -100,20 +100,21 @@ check("Race.tire_model es QuadraticTireModel",
 check("20 coches en la carrera",          len(race.cars) == 20)
 check("Track.base_overtaking_prob cargado del JSON", abs(race.track.base_overtaking_prob - 0.0899) < 0.001)
 
-# Coche del usuario (car_id=0)
-user_car = next((c for c in race.cars if c.car_id == 0), None)
-check("Coche car_id=0 existe",            user_car is not None)
+# Coche del usuario (usando agent_car_id)
+agent_car_id = race.agent_car_id
+user_car = next((c for c in race.cars if c.car_id == agent_car_id), None)
+check(f"Coche car_id={agent_car_id} existe",            user_car is not None)
 if user_car:
     check("base_lap_time del usuario ~ 71.383s",
           abs(user_car.base_lap_time - 71.383) < 0.01)
     check("fuel_mass inicializada (>0)",  user_car.fuel_mass > 0)
     check("laps_on_tire inicial == 0",    user_car.laps_on_tire == 0)
-    check("car_id=0 sin planned_stops",
+    check(f"car_id={agent_car_id} sin planned_stops",
           user_car.strategy.get("planned_stops", []) == [])
 
 # Oponentes con estrategias
 cars_with_stops = [c for c in race.cars
-                   if c.car_id != 0 and c.strategy.get("planned_stops")]
+                   if c.car_id != agent_car_id and c.strategy.get("planned_stops")]
 check("Al menos 1 oponente tiene planned_stops",
       len(cars_with_stops) > 0)
 
@@ -179,16 +180,16 @@ check("lap_times tiene 20 entradas",      len(state["lap_times"]) == 20)
 check("Ningun coche terminado en vuelta 1", not any(state["finished"].values()))
 
 # Lap times en rango razonable
-lt_user = state["lap_times"][0]
-check("lap_time de car_id=0 es positivo", lt_user > 0)
-check("lap_time de car_id=0 < 200s",     lt_user < 200)
+lt_user = state["lap_times"][agent_car_id]
+check(f"lap_time de car_id={agent_car_id} es positivo", lt_user > 0)
+check(f"lap_time de car_id={agent_car_id} < 200s",     lt_user < 200)
 
 # laps_on_tire incrementado
-check("laps_on_tire de car_id=0 == 1 tras vuelta 1",
-      state["laps_on_tire"][0] == 1)
+check(f"laps_on_tire de car_id={agent_car_id} == 1 tras vuelta 1",
+      state["laps_on_tire"][agent_car_id] == 1)
 
 # total_time > 0
-check("total_time de car_id=0 > 0",      state["total_time"][0] > 0)
+check(f"total_time de car_id={agent_car_id} > 0",      state["total_time"][agent_car_id] > 0)
 
 # Simular 5 vueltas mas
 for _ in range(5):
@@ -196,8 +197,8 @@ for _ in range(5):
 
 check("time_step == 6 tras 6 steps",     state["time_step"] == 6)
 check("fuel_mass decrece tras 6 vueltas",
-      state["fuel_mass"][0] < initial_fuel,
-      f"inicial={initial_fuel:.2f}  ahora={state['fuel_mass'][0]:.2f}")
+      state["fuel_mass"][agent_car_id] < initial_fuel,
+      f"inicial={initial_fuel:.2f}  ahora={state['fuel_mass'][agent_car_id]:.2f}")
 
 # ==============================================================================
 # 5. Pit stops de oponentes: se ejecutan en la vuelta correcta
@@ -205,7 +206,7 @@ check("fuel_mass decrece tras 6 vueltas",
 section("5. Pit stops - ejecucion en vuelta correcta")
 
 # Reiniciamos carrera para este test
-race2 = setup_real_race(gp)
+race2 = setup_real_race(gp, agent_car_id=0)
 
 # Encontrar un coche con parada planificada pronto
 early_stop_car = None
@@ -243,7 +244,7 @@ else:
 # ==============================================================================
 section("7. num_cars personalizado")
 
-race_5 = setup_real_race(gp, num_cars=5)
+race_5 = setup_real_race(gp, num_cars=5, agent_car_id=0)
 check("num_cars=5 crea exactamente 5 coches", len(race_5.cars) == 5)
 check("car_ids del 0 al 4",
       sorted(c.car_id for c in race_5.cars) == list(range(5)))

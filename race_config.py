@@ -74,13 +74,14 @@ def load_gp_from_json(json_path: str | Path) -> dict:
 
 # ─── Factory ──────────────────────────────────────────────────────────────────
 
-def setup_real_race(data: dict, num_cars: int = None) -> Race:
+def setup_real_race(data: dict, num_cars: int = None, agent_car_id: int = 1) -> Race:
     """
     Construye una instancia de Race completa a partir del dict de datos del GP.
 
     Args:
         data:      Dict con datos del GP (de load_gp_from_json).
         num_cars:  Nº de coches a incluir. Si None, usa todos los de clasificación.
+        agent_car_id: ID del coche controlado por el agente.
 
     Returns:
         Race lista para simular.
@@ -119,6 +120,7 @@ def setup_real_race(data: dict, num_cars: int = None) -> Race:
 
     qualy_data = data["qualifying_results"]
     strategies = data.get("opponent_strategies", {})
+    real_results = data.get("real_results", {})
     limit = num_cars if num_cars else len(qualy_data)
 
     cars = []
@@ -136,7 +138,17 @@ def setup_real_race(data: dict, num_cars: int = None) -> Race:
             q_time = round(last_time + 0.1 * (i - len(qualy_data) + 1), 3)
             driver_name = f"Driver {car_id}"
 
-        initial_tire = TireType.SOFT if i % 2 == 0 else TireType.MEDIUM
+        # Determinar neumático inicial real si está disponible
+        initial_tire = None
+        car_id_str = str(car_id)
+        if real_results and car_id_str in real_results:
+            real_comp_str = real_results[car_id_str].get("starting_compound")
+            if real_comp_str:
+                initial_tire = _TIRE_MAP.get(real_comp_str.upper())
+
+        if initial_tire is None:
+            # Fallback a la heurística anterior
+            initial_tire = TireType.SOFT if i % 2 == 0 else TireType.MEDIUM
 
         car = Car(
             car_id=car_id,
@@ -146,7 +158,7 @@ def setup_real_race(data: dict, num_cars: int = None) -> Race:
         )
 
         # Asignar estrategia del oponente si existe
-        if car_id != 0:
+        if car_id != agent_car_id:
             strat_key = str(car_id)
             if strat_key in strategies:
                 planned_stops = []
@@ -158,7 +170,7 @@ def setup_real_race(data: dict, num_cars: int = None) -> Race:
 
         cars.append(car)
 
-    return Race(track, cars, tire_model=tire_model)
+    return Race(track, cars, tire_model=tire_model, agent_car_id=agent_car_id)
 
 
 # ─── Prueba rápida ────────────────────────────────────────────────────────────

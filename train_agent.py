@@ -42,7 +42,12 @@ class TrainingCallback(BaseCallback):
                 race_state = infos[0].get('race_state', {})
                 leaderboard = race_state.get('leaderboard_by_time', [])
                 try:
-                    rank = [car_id for car_id, _ in leaderboard].index(0) + 1
+                    agent_car_id = 0
+                    if hasattr(self.training_env, 'get_attr'):
+                        agent_car_id = self.training_env.get_attr('agent_car_id')[0]
+                    elif hasattr(self.training_env, 'agent_car_id'):
+                        agent_car_id = self.training_env.agent_car_id
+                    rank = [car_id for car_id, _ in leaderboard].index(agent_car_id) + 1
                 except ValueError:
                     rank = 20  # fallback
             else:
@@ -155,7 +160,7 @@ def plot_training_progress(callback):
     # Adjust spacing and save
     plt.tight_layout()
     plt.savefig('training_progress.png', dpi=300)
-    plt.show()
+    # plt.show() removed to prevent blocking in background execution
 
 
 def main():
@@ -202,7 +207,7 @@ def main():
     
     # Train the model
     print("Training started...")
-    model.learn(total_timesteps=500000, callback=callback)
+    model.learn(total_timesteps=1500000, callback=callback)
     print("Training completed!")
     
     # Save the model

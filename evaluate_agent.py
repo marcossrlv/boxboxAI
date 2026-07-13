@@ -10,6 +10,7 @@ import gymnasium as gym
 from stable_baselines3 import PPO, A2C, DQN
 from race_gym_env import RaceGymEnv, register_race_env
 from race_config import load_gp_from_json
+import os
 
 
 def evaluate_model(model, env, n_episodes, deterministic=True, gp_data=None):
@@ -222,7 +223,9 @@ def evaluate_model(model, env, n_episodes, deterministic=True, gp_data=None):
         plt.legend(loc='best', frameon=True, shadow=True)
         plt.tight_layout()
         
-        plot_path = "evaluation_comparison.png"
+        plot_dir = "plots"
+        os.makedirs(plot_dir, exist_ok=True)
+        plot_path = os.path.join(plot_dir, "evaluation_comparison.png")
         plt.savefig(plot_path, dpi=300)
         plt.close()
         print(f"\n[OK] Comparison plot saved as '{plot_path}'")
@@ -232,12 +235,12 @@ def evaluate_model(model, env, n_episodes, deterministic=True, gp_data=None):
     return episode_rewards, episode_lengths, episode_positions
 
 
-def run_simulation(model, env, seed, strategy_type="agent", deterministic=True):
+def run_simulation(model, env, seed, strategy_type="agent", deterministic=True, gp_data=None):
     """
     Runs a single simulation episode.
     strategy_type can be:
       - "agent": Use the DRL model's policy
-      - "real": Force pit stops at Lap 23 (MEDIUM) and Lap 47 (SOFT)
+      - "real": Force pit stops based on the driver's real strategy from gp_data (or fallback)
       - "heuristic": Force pit stops at Lap 22 (MEDIUM) and Lap 44 (HARD)
     """
     import random
@@ -264,12 +267,25 @@ def run_simulation(model, env, seed, strategy_type="agent", deterministic=True):
             action, _states = model.predict(obs, deterministic=deterministic)
             action_val = int(action.item()) if hasattr(action, "item") else int(action)
         elif strategy_type == "real":
-            if current_lap == 23:
-                action_val = 2  # Pit for MEDIUM
-            elif current_lap == 47:
-                action_val = 1  # Pit for SOFT
+            action_val = 0
+            strategy = []
+            if gp_data:
+                real_results = gp_data.get("real_results", {})
+                agent_real = real_results.get(str(env.agent_car_id), {})
+                strategy = agent_real.get("strategy", [])
+            
+            if strategy:
+                for stop in strategy:
+                    if stop.get("in_lap") == current_lap:
+                        compound = stop.get("tire_type").upper()
+                        action_val = {"SOFT": 1, "MEDIUM": 2, "HARD": 3}.get(compound, 0)
+                        break
             else:
-                action_val = 0  # No pit
+                # Fallback to Norris
+                if current_lap == 23:
+                    action_val = 2  # Pit for MEDIUM
+                elif current_lap == 47:
+                    action_val = 1  # Pit for SOFT
         elif strategy_type == "heuristic":
             if current_lap == 22:
                 action_val = 2  # Pit for MEDIUM
@@ -355,36 +371,44 @@ def run_compare_suite(model, env, gp_data):
     import collections
     from matplotlib.lines import Line2D
     
+    real_results_data = gp_data.get("real_results", {})
+    agent_real = real_results_data.get(str(env.agent_car_id))
+    driver_name = "Real Driver"
+    if agent_real:
+        driver_name = agent_real.get("driver_name", "Real Driver")
+        
     print("\n" + "=" * 90)
     print("      INICIANDO SUITE DE COMPARACIÓN DE ESTRATEGIAS (BARCELONA - 66 VUELTAS)")
     print("=" * 90)
     
     # 1. Baseline Humano
-    print("\n[1/4] Simulando Escenario Real (Baseline Humano: Norris)...")
-    real_results = run_simulation(model, env, seed=42, strategy_type="real")
+    print(f"\n[1/4] Simulando Escenario Real (Baseline Humano: {driver_name})...")
+    real_results = run_simulation(model, env, seed=42, strategy_type="real", gp_data=gp_data)
     print(f"      Completado: Posición Final P{real_results['final_position']}, Tiempo = {real_results['total_time']:.3f}s")
     
     # 2. Línea Base Estática (Heurística)
     print("\n[2/4] Simulando Estrategia Heurística (Línea Base Estática)...")
-    heuristic_results = run_simulation(model, env, seed=42, strategy_type="heuristic")
+    heuristic_results = run_simulation(model, env, seed=42, strategy_type="heuristic", gp_data=gp_data)
     print(f"      Completado: Posición Final P{heuristic_results['final_position']}, Tiempo = {heuristic_results['total_time']:.3f}s")
     
     # 3. Agente Inteligente (Determinista)
     print("\n[3/4] Simulando Agente DRL (Modo Determinista)...")
-    agent_results = run_simulation(model, env, seed=42, strategy_type="agent", deterministic=True)
+    agent_results = run_simulation(model, env, seed=42, strategy_type="agent", deterministic=True, gp_data=gp_data)
     print(f"      Completado: Posición Final P{agent_results['final_position']}, Tiempo = {agent_results['total_time']:.3f}s")
     
     # 4. Prueba de Robustez (Estocástica)
     print("\n[4/4] Simulando Prueba de Robustez (100 carreras estocásticas)...")
     robustness_positions = []
     robustness_times = []
+    robustness_strategies = []
     robustness_wins = 0
     
     for i in range(100):
         seed = 100 + i
-        res = run_simulation(model, env, seed=seed, strategy_type="agent", deterministic=True)
+        res = run_simulation(model, env, seed=seed, strategy_type="agent", deterministic=True, gp_data=gp_data)
         robustness_positions.append(res['final_position'])
         robustness_times.append(res['total_time'])
+        robustness_strategies.append(res['strategy'])
         if res['final_position'] == 1:
             robustness_wins += 1
             
@@ -414,7 +438,7 @@ def run_compare_suite(model, env, gp_data):
     print("=" * 115)
     print(f"{'Escenario':<32} | {'Pos Final':<10} | {'Tiempo Total':<13} | {'Dif. Ganador':<13} | {'Estrategia de Paradas (Vuelta: Neumático)':<35}")
     print("-" * 115)
-    print(f"{'Baseline Humano (Norris Real)':<32} | P{real_results['final_position']:<9} | {real_results['total_time']:<11.3f}s | {real_gap_str:<13} | {real_results['strategy']}")
+    print(f"{f'Baseline Humano ({driver_name} Real)':<32} | P{real_results['final_position']:<9} | {real_results['total_time']:<11.3f}s | {real_gap_str:<13} | {real_results['strategy']}")
     print(f"{'Línea Base Estática (Heurística)':<32} | P{heuristic_results['final_position']:<9} | {heuristic_results['total_time']:<11.3f}s | {heur_gap_str:<13} | {heuristic_results['strategy']}")
     print(f"{'Agente Inteligente (DRL Det.)':<32} | P{agent_results['final_position']:<9} | {agent_results['total_time']:<11.3f}s | {agent_gap_str:<13} | {agent_results['strategy']}")
     print("-" * 115)
@@ -422,10 +446,19 @@ def run_compare_suite(model, env, gp_data):
     print(f"  - Posición Final Promedio:    P{avg_pos:.2f} ± {std_pos:.2f} (Rango: P{min(robustness_positions)} - P{max(robustness_positions)})")
     print(f"  - Tiempo de Carrera Promedio:  {avg_time:.3f}s ± {std_time:.2f}s")
     print(f"  - Tasa de Victorias (P1):      {robustness_wins}/100 ({win_rate:.1f}%)")
+    
+    # Imprimir top estrategias en consola
+    counter = collections.Counter(robustness_strategies)
+    print("  - Estrategias más frecuentes:")
+    for strat, count in counter.most_common(3):
+        print(f"    * {strat:<60} | {count}% de uso")
     print("=" * 115 + "\n")
     
     # Generar gráficos
     try:
+        plot_dir = "plots"
+        os.makedirs(plot_dir, exist_ok=True)
+        
         # Configurar estilo visual premium
         plt.rcParams['font.family'] = 'sans-serif'
         plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica']
@@ -441,7 +474,7 @@ def run_compare_suite(model, env, gp_data):
         gap_real = [d['gap'] for d in real_results['laps_data']]
         gap_agent = [d['gap'] for d in agent_results['laps_data']]
         
-        ax_pos.plot(laps, gap_real, color='#FF9F1C', linewidth=2.5, linestyle='-', label='Baseline Humano (Norris Real)')
+        ax_pos.plot(laps, gap_real, color='#FF9F1C', linewidth=2.5, linestyle='-', label=f'Baseline Humano ({driver_name} Real)')
         ax_pos.plot(laps, gap_agent, color='#2EC4B6', linewidth=3.0, linestyle='-', label='Agente Inteligente (DRL Det.)')
         
         # Marcadores visuales en las líneas indicando las paradas
@@ -466,7 +499,7 @@ def run_compare_suite(model, env, gp_data):
         ax_pos.legend(loc='lower left', frameon=True, facecolor='white', framealpha=0.9)
         plt.tight_layout()
         
-        plot_path_pos = "lap_chart_gap.png"
+        plot_path_pos = os.path.join(plot_dir, "lap_chart_gap.png")
         plt.savefig(plot_path_pos, dpi=300)
         plt.close()
         print(f"[OK] Gráfico de brecha con el líder guardado en '{plot_path_pos}'")
@@ -475,7 +508,7 @@ def run_compare_suite(model, env, gp_data):
         fig_wear = plt.figure(figsize=(10, 6))
         ax_wear = fig_wear.add_subplot(1, 1, 1)
         
-        def plot_wear_stints(ax, laps_data, linestyle, linewidth, label_prefix):
+        def plot_wear_stints(ax, laps_data, linestyle, linewidth, label_prefix, alpha=1.0):
             stints = []
             current_stint = []
             for entry in laps_data:
@@ -499,10 +532,12 @@ def run_compare_suite(model, env, gp_data):
                 comp = stint[0]['compound']
                 
                 ax.plot(stint_laps, stint_offsets, color=compound_colors.get(comp, "#000000"), 
-                        linestyle=linestyle, linewidth=linewidth)
+                        linestyle=linestyle, linewidth=linewidth, alpha=alpha)
                         
-        plot_wear_stints(ax_wear, agent_results['laps_data'], linestyle='-', linewidth=2.5, label_prefix='Agent')
-        plot_wear_stints(ax_wear, real_results['laps_data'], linestyle=':', linewidth=2.0, label_prefix='Real')
+        # Dibujamos primero la línea del piloto real (más gruesa y discontinua en el fondo)
+        plot_wear_stints(ax_wear, real_results['laps_data'], linestyle='--', linewidth=4.0, label_prefix='Real', alpha=0.7)
+        # Dibujamos encima la línea del agente (más fina y continua en primer plano)
+        plot_wear_stints(ax_wear, agent_results['laps_data'], linestyle='-', linewidth=2.0, label_prefix='Agent', alpha=1.0)
         
         ax_wear.set_title(f"Ciclo de Vida del Neumático - {gp_name} {gp_year}", fontsize=13, fontweight='bold', pad=12)
         ax_wear.set_xlabel("Vuelta", fontsize=10)
@@ -513,8 +548,8 @@ def run_compare_suite(model, env, gp_data):
         ax_wear.grid(True, linestyle=':', alpha=0.6)
         
         legend_elements = [
-            Line2D([0], [0], color='black', linestyle='-', linewidth=2.5, label='Agente DRL'),
-            Line2D([0], [0], color='black', linestyle=':', linewidth=2.0, label='Piloto Real (Norris)'),
+            Line2D([0], [0], color='black', linestyle='-', linewidth=2.0, label='Agente DRL'),
+            Line2D([0], [0], color='black', linestyle='--', linewidth=4.0, alpha=0.7, label=f'Piloto Real ({driver_name})'),
             Line2D([0], [0], color='#E10600', lw=4, label='SOFT (Rojo)'),
             Line2D([0], [0], color='#FAD02C', lw=4, label='MEDIUM (Amarillo)'),
             Line2D([0], [0], color='#777777', lw=4, label='HARD (Gris)')
@@ -522,7 +557,7 @@ def run_compare_suite(model, env, gp_data):
         ax_wear.legend(handles=legend_elements, loc='upper left', frameon=True)
         plt.tight_layout()
         
-        plot_path_wear = "tire_degradation.png"
+        plot_path_wear = os.path.join(plot_dir, "tire_degradation.png")
         plt.savefig(plot_path_wear, dpi=300)
         plt.close()
         print(f"[OK] Gráfico de ciclo de vida del neumático guardado en '{plot_path_wear}'")
@@ -564,10 +599,42 @@ def run_compare_suite(model, env, gp_data):
                     bbox=dict(boxstyle='round', facecolor='white', alpha=0.9, edgecolor='gray'))
         plt.tight_layout()
         
-        plot_path_dist = "robustness_distribution.png"
+        plot_path_dist = os.path.join(plot_dir, "robustness_distribution.png")
         plt.savefig(plot_path_dist, dpi=300)
         plt.close()
         print(f"[OK] Gráfico de robustez guardado en '{plot_path_dist}'\n")
+        
+        # --- ELEMENTO 5: TOP ESTRATEGIAS DEL AGENTE ---
+        fig_strat = plt.figure(figsize=(10, 5))
+        ax_strat = fig_strat.add_subplot(1, 1, 1)
+        
+        counter = collections.Counter(robustness_strategies)
+        top_strats = counter.most_common(5)
+        
+        labels = [item[0] for item in top_strats]
+        percentages = [(item[1] / len(robustness_strategies)) * 100 for item in top_strats]
+        
+        labels.reverse()
+        percentages.reverse()
+        
+        bars = ax_strat.barh(labels, percentages, color='#2EC4B6', edgecolor='black', height=0.5)
+        
+        for bar in bars:
+            width = bar.get_width()
+            ax_strat.text(width + 1.0, bar.get_y() + bar.get_height()/2, f'{width:.1f}%', 
+                          va='center', ha='left', fontsize=10, fontweight='bold', color='#333333')
+                          
+        ax_strat.set_title(f"Top Estrategias Elegidas por el Agente (100 Carreras)\nGP {gp_name} {gp_year}", 
+                           fontsize=13, fontweight='bold', pad=15)
+        ax_strat.set_xlabel("Porcentaje de Uso (%)", fontsize=10)
+        ax_strat.set_xlim(0, max(percentages) + 12.0 if percentages else 100)
+        ax_strat.grid(True, axis='x', linestyle=':', alpha=0.6)
+        plt.tight_layout()
+        
+        plot_path_strat = os.path.join(plot_dir, "agent_top_strategies.png")
+        plt.savefig(plot_path_strat, dpi=300)
+        plt.close()
+        print(f"[OK] Gráfico de top estrategias guardado en '{plot_path_strat}'\n")
         
     except Exception as e:
         print(f"Error generando los gráficos comparativos: {e}")

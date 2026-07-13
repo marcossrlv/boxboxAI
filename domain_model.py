@@ -237,6 +237,7 @@ class Race:
         fuel_model: Optional[FuelModel] = None,
         pit_model: Optional[PitStopModel] = None,
         rng: Optional[random.Random] = None,
+        agent_car_id: int = 1,
     ):
         self.track = track
         self.cars = cars
@@ -250,7 +251,7 @@ class Race:
         self.fuel_model = fuel_model or FuelModel()
         self.pit_model = pit_model or PitStopModel()
         self.rng = rng or random.Random()
-        self.agent_car_id = 0
+        self.agent_car_id = agent_car_id
         
         # Race state
         self.order = [car.car_id for car in cars]

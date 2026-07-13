@@ -4,15 +4,15 @@
   "total_laps": 66,
   "pole_time": 71.383,
   "tire_coefficients": {
-    "SOFT": [
-      0.028686,
-      -0.836173,
-      14.962614
-    ],
     "HARD": [
       0.017911,
       -0.681027,
       14.365859
+    ],
+    "SOFT": [
+      0.028686,
+      -0.836173,
+      14.962614
     ],
     "MEDIUM": [
       0.027586,
@@ -143,7 +143,7 @@
         "tire_type": "HARD"
       }
     ],
-    "10": [
+    "8": [
       {
         "in_lap": 32,
         "tire_type": "MEDIUM"
@@ -153,7 +153,7 @@
         "tire_type": "SOFT"
       }
     ],
-    "9": [
+    "10": [
       {
         "in_lap": 20,
         "tire_type": "MEDIUM"
@@ -183,7 +183,7 @@
         "tire_type": "HARD"
       }
     ],
-    "18": [
+    "19": [
       {
         "in_lap": 15,
         "tire_type": "MEDIUM"
@@ -217,7 +217,7 @@
         "tire_type": "SOFT"
       }
     ],
-    "19": [
+    "18": [
       {
         "in_lap": 19,
         "tire_type": "SOFT"
@@ -253,7 +253,7 @@
         "tire_type": "HARD"
       }
     ],
-    "7": [
+    "9": [
       {
         "in_lap": 14,
         "tire_type": "MEDIUM"
@@ -299,7 +299,7 @@
         "tire_type": "HARD"
       }
     ],
-    "8": [
+    "7": [
       {
         "in_lap": 22,
         "tire_type": "MEDIUM"
@@ -309,6 +309,364 @@
         "tire_type": "SOFT"
       }
     ]
+  },
+  "real_results": {
+    "1": {
+      "driver_name": "Max Verstappen",
+      "grid_position": 2,
+      "final_position": 1,
+      "status": "Finished",
+      "total_time_seconds": 5300.227,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 18,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 45,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "0": {
+      "driver_name": "Lando Norris",
+      "grid_position": 1,
+      "final_position": 2,
+      "status": "Finished",
+      "total_time_seconds": 5302.446,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 24,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 48,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "2": {
+      "driver_name": "Lewis Hamilton",
+      "grid_position": 3,
+      "final_position": 3,
+      "status": "Finished",
+      "total_time_seconds": 5318.017,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 17,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 44,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "3": {
+      "driver_name": "George Russell",
+      "grid_position": 4,
+      "final_position": 4,
+      "status": "Finished",
+      "total_time_seconds": 5322.547,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 16,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 37,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "4": {
+      "driver_name": "Charles Leclerc",
+      "grid_position": 5,
+      "final_position": 5,
+      "status": "Finished",
+      "total_time_seconds": 5322.936,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 25,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 48,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "5": {
+      "driver_name": "Carlos Sainz",
+      "grid_position": 6,
+      "final_position": 6,
+      "status": "Finished",
+      "total_time_seconds": 5331.255,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 16,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 37,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "7": {
+      "driver_name": "Oscar Piastri",
+      "grid_position": 9,
+      "final_position": 7,
+      "status": "Finished",
+      "total_time_seconds": 5333.987,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 22,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 47,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "8": {
+      "driver_name": "Sergio Perez",
+      "grid_position": 11,
+      "final_position": 8,
+      "status": "Finished",
+      "total_time_seconds": 5359.751,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 32,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 50,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "6": {
+      "driver_name": "Pierre Gasly",
+      "grid_position": 7,
+      "final_position": 9,
+      "status": "Finished",
+      "total_time_seconds": 5362.252,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 15,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 39,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "9": {
+      "driver_name": "Esteban Ocon",
+      "grid_position": 8,
+      "final_position": 10,
+      "status": "Finished",
+      "total_time_seconds": 5372.116,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 14,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 38,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "12": {
+      "driver_name": "Nico Hulkenberg",
+      "grid_position": 13,
+      "final_position": 11,
+      "status": "Finished",
+      "total_time_seconds": 5379.442,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 13,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 39,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "10": {
+      "driver_name": "Fernando Alonso",
+      "grid_position": 10,
+      "final_position": 12,
+      "status": "Lapped",
+      "total_time_seconds": 5309.724,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 20,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 46,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "14": {
+      "driver_name": "Guanyu Zhou",
+      "grid_position": 15,
+      "final_position": 13,
+      "status": "Lapped",
+      "total_time_seconds": 5315.703,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 10,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 42,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "13": {
+      "driver_name": "Lance Stroll",
+      "grid_position": 14,
+      "final_position": 14,
+      "status": "Lapped",
+      "total_time_seconds": 5325.479,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 18,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 38,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "17": {
+      "driver_name": "Daniel Ricciardo",
+      "grid_position": 18,
+      "final_position": 15,
+      "status": "Lapped",
+      "total_time_seconds": 5344.277,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 17,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 43,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "11": {
+      "driver_name": "Valtteri Bottas",
+      "grid_position": 12,
+      "final_position": 16,
+      "status": "Lapped",
+      "total_time_seconds": 5353.54,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 29,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "15": {
+      "driver_name": "Kevin Magnussen",
+      "grid_position": 16,
+      "final_position": 17,
+      "status": "Lapped",
+      "total_time_seconds": 5355.015,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 11,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 30,
+          "tire_type": "HARD"
+        }
+      ]
+    },
+    "18": {
+      "driver_name": "Alexander Albon",
+      "grid_position": 20,
+      "final_position": 18,
+      "status": "Lapped",
+      "total_time_seconds": 5358.376,
+      "starting_compound": "MEDIUM",
+      "strategy": [
+        {
+          "in_lap": 19,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "16": {
+      "driver_name": "Yuki Tsunoda",
+      "grid_position": 17,
+      "final_position": 19,
+      "status": "Lapped",
+      "total_time_seconds": 5369.131,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 10,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 28,
+          "tire_type": "HARD"
+        },
+        {
+          "in_lap": 45,
+          "tire_type": "SOFT"
+        }
+      ]
+    },
+    "19": {
+      "driver_name": "Logan Sargeant",
+      "grid_position": 19,
+      "final_position": 20,
+      "status": "Lapped",
+      "total_time_seconds": 5305.093,
+      "starting_compound": "SOFT",
+      "strategy": [
+        {
+          "in_lap": 15,
+          "tire_type": "MEDIUM"
+        },
+        {
+          "in_lap": 35,
+          "tire_type": "HARD"
+        }
+      ]
+    }
   },
   "base_overtaking_prob": 0.0899
 }

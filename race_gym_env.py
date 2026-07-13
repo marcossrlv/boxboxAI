@@ -32,16 +32,17 @@ class RaceGymEnv(gym.Env):
         gp_data: dict,
         render_mode: Optional[str] = None,
         logger: Optional[SimulationLogger] = None,
+        agent_car_id: int = 1,
     ):
         super().__init__()
 
         self.render_mode = render_mode
-        self.race = setup_real_race(gp_data)
+        self.agent_car_id = agent_car_id
+        self.race = setup_real_race(gp_data, agent_car_id=agent_car_id)
         self.num_competitors = len(self.race.cars) - 1
         self.num_cars = len(self.race.cars)
 
-        # Focus on first car as the agent
-        self.agent_car_id = 0
+        # Focus on configured car as the agent
         self.agent_car = next(c for c in self.race.cars if c.car_id == self.agent_car_id)
         
         # Calculate initial fuel mass for normalization
@@ -148,6 +149,11 @@ class RaceGymEnv(gym.Env):
                 reward += 10.0  # Win bonus
             else:
                 reward += 5.0   # Finish bonus
+            
+            # F1 rule check: must use at least two different dry tire compounds
+            unique_compounds = set(self.agent_car.tire_history)
+            if len(unique_compounds) < 2:
+                reward -= 50.0  # Severe penalty for failing to use at least two different compounds
                 
         # Pit stop penalty to represent the 20-second physical cost of pitting
         if action in (1, 2, 3):

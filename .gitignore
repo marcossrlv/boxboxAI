@@ -34,6 +34,7 @@ race_tensorboard/
 # Generated trained models and plots (outputs)
 race_agent_ppo.zip
 training_progress.png
+plots
 
 # OS metadata & IDE configs
 .DS_Store

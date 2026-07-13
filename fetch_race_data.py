@@ -45,12 +45,14 @@ def load_session(year: int, gp: str, session_type: str):
     return session
 
 
-def get_qualifying_results(quali_session) -> list[tuple[int, float, str]]:
+def get_qualifying_results(quali_session) -> tuple[list[tuple[int, float, str]], dict[str, int]]:
     """
-    Devuelve lista de (car_id, lap_time_seconds, driver_name) ordenada por posición de clasificación.
-    car_id = posición en parrilla - 1  (0-indexed, el poleman es car_id=0)
+    Devuelve lista de (car_id, lap_time_seconds, driver_name) ordenada por posición de clasificación,
+    y un diccionario que mapea driver_number -> car_id.
+    car_id = posición de clasificación - 1 (0-indexed, el poleman es car_id=0)
     """
     results = []
+    driver_num_to_car_id = {}
     laps = quali_session.laps
     driver_info = {str(row["DriverNumber"]): row["FullName"] for _, row in quali_session.results.iterrows()}
 
@@ -66,8 +68,9 @@ def get_qualifying_results(quali_session) -> list[tuple[int, float, str]]:
             continue
         driver_name = driver_info.get(driver_num, f"Driver {driver_num}")
         results.append((grid_pos, round(lap_time_s, 3), driver_name))
+        driver_num_to_car_id[driver_num] = grid_pos
 
-    return results
+    return results, driver_num_to_car_id
 
 
 def get_stint_data(race_session) -> dict[str, list[tuple[int, float]]]:
@@ -229,7 +232,7 @@ def build_gp_data(year: int, gp: str) -> dict:
     """
     # ── Clasificación ──────────────────────────────────────────────
     quali = load_session(year, gp, "Q")
-    qualy_results = get_qualifying_results(quali)
+    qualy_results, driver_num_to_car_id = get_qualifying_results(quali)
     pole_time = qualy_results[0][1] if qualy_results else 70.0
 
     print(f"\n[Clasificación] Pole: {pole_time}s")
@@ -253,10 +256,10 @@ def build_gp_data(year: int, gp: str) -> dict:
         tire_coefficients[compound] = coeffs
 
     # ── Estrategias observadas ─────────
-    opponent_strategies = extract_opponent_strategies(race)
+    opponent_strategies = extract_opponent_strategies(race, driver_num_to_car_id)
 
     # ── Resultados reales ──────────────
-    real_results = extract_real_results(race)
+    real_results = extract_real_results(race, driver_num_to_car_id)
 
     # ── Probabilidad de adelantamiento ──
     base_overtaking_prob = calculate_overtaking_probability(race)
@@ -274,7 +277,7 @@ def build_gp_data(year: int, gp: str) -> dict:
     }
 
 
-def extract_real_results(race_session) -> dict[str, dict]:
+def extract_real_results(race_session, driver_num_to_car_id: dict[str, int]) -> dict[str, dict]:
     """
     Extrae los resultados reales de carrera y las estrategias para cada piloto.
     El dict devuelto mapea car_id (como string) a un dict con:
@@ -287,12 +290,6 @@ def extract_real_results(race_session) -> dict[str, dict]:
     """
     laps = race_session.laps
     results = race_session.results
-
-    # Mapa driver_number → grid_position (0-indexed)
-    driver_grid: dict[str, int] = {}
-    for _, row in results.iterrows():
-        grid = int(row.get("GridPosition", 0))
-        driver_grid[str(row["DriverNumber"])] = max(0, grid - 1)
 
     real_results = {}
 
@@ -308,10 +305,11 @@ def extract_real_results(race_session) -> dict[str, dict]:
         driver_num = str(row["DriverNumber"])
         driver_name = str(row["FullName"])
         grid_pos = int(row["GridPosition"])
-        car_id = driver_grid.get(driver_num, -1)
-
-        if car_id < 0:
-            continue
+        
+        car_id = driver_num_to_car_id.get(driver_num)
+        if car_id is None:
+            # Fallback a posición en parrilla
+            car_id = max(0, grid_pos - 1)
 
         final_pos = int(row["Position"]) if not np.isnan(row["Position"]) else 20
         status = str(row["Status"])
@@ -354,24 +352,28 @@ def extract_real_results(race_session) -> dict[str, dict]:
     return real_results
 
 
-def extract_opponent_strategies(race_session) -> dict[str, list[dict]]:
+def extract_opponent_strategies(race_session, driver_num_to_car_id: dict[str, int]) -> dict[str, list[dict]]:
     """
     Extrae las paradas en boxes reales de cada piloto.
-    car_id = posición en parrilla - 1 (0-indexed).
+    car_id = posición de clasificación - 1 (0-indexed).
     """
     laps = race_session.laps
     results = race_session.results
 
-    # Mapa driver_number → grid_position (0-indexed)
-    driver_grid: dict[str, int] = {}
-    for _, row in results.iterrows():
-        grid = int(row.get("GridPosition", 0))
-        driver_grid[str(row["DriverNumber"])] = max(0, grid - 1)
-
     strategies: dict[str, list[dict]] = {}
 
     for driver_num, group in laps.groupby("DriverNumber"):
-        car_id = driver_grid.get(str(driver_num), -1)
+        driver_num_str = str(driver_num)
+        car_id = driver_num_to_car_id.get(driver_num_str)
+        if car_id is None:
+            # Fallback a posición en parrilla
+            row = results[results["DriverNumber"] == driver_num_str]
+            if not row.empty:
+                grid = int(row.iloc[0].get("GridPosition", 0))
+                car_id = max(0, grid - 1)
+            else:
+                continue
+
         if car_id <= 0:  # Excluimos car_id=0 (usuario)
             continue
 
