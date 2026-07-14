@@ -155,7 +155,7 @@ class RaceGymEnv(gym.Env):
             if len(unique_compounds) < 2:
                 reward -= 50.0  # Severe penalty for failing to use at least two different compounds
                 
-        # Pit stop penalty to represent the 20-second physical cost of pitting
+        # Pit stop penalty to represent the 23-second physical cost of pitting
         if action in (1, 2, 3):
             reward -= 0.5  # Moderate penalty to prevent excessive pitting without hiding long-term gains
         

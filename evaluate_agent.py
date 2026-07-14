@@ -295,9 +295,14 @@ def run_simulation(model, env, seed, strategy_type="agent", deterministic=True, 
                 elif current_lap == 47:
                     action_val = 1  # Pit for SOFT
         elif strategy_type == "heuristic":
-            if current_lap == 22:
+            total_laps = env.race.track.laps
+            stint_len = total_laps // 3
+            stop1_lap = stint_len
+            stop2_lap = stint_len * 2
+            
+            if current_lap == stop1_lap:
                 action_val = 2  # Pit for MEDIUM
-            elif current_lap == 44:
+            elif current_lap == stop2_lap:
                 action_val = 3  # Pit for HARD
             else:
                 action_val = 0  # No pit
@@ -403,28 +408,29 @@ def run_compare_suite(model, env, gp_data):
     agent_results = run_simulation(model, env, seed=42, strategy_type="agent", deterministic=True, gp_data=gp_data)
     print(f"      Completado: Posición Final P{agent_results['final_position']}, Tiempo = {agent_results['total_time']:.3f}s")
     
-    # Imprimir la Tabla Maestra de Rendimiento
-    real_winner_time = real_results['winner_time']
-    real_gap = real_results['total_time'] - real_winner_time
-    real_gap_str = f"+{real_gap:.3f}s" if real_gap > 0 else "Ganador"
+    # Imprimir la Tabla Maestra de Rendimiento con Métricas Absolutas
+    t_agent = agent_results['total_time']
+    t_real = real_results['total_time']
+    t_heur = heuristic_results['total_time']
     
-    heur_winner_time = heuristic_results['winner_time']
-    heur_gap = heuristic_results['total_time'] - heur_winner_time
-    heur_gap_str = f"+{heur_gap:.3f}s" if heur_gap > 0 else "Ganador"
+    delta_real_vs_real = "Baseline"
+    delta_real_vs_heur = f"{t_real - t_heur:+.3f}s"
     
-    agent_winner_time = agent_results['winner_time']
-    agent_gap = agent_results['total_time'] - agent_winner_time
-    agent_gap_str = f"+{agent_gap:.3f}s" if agent_gap > 0 else "Ganador"
+    delta_heur_vs_real = f"{t_heur - t_real:+.3f}s"
+    delta_heur_vs_heur = "Baseline"
     
-    print("\n" + "=" * 115)
-    print("                                  ELEMENTO 1: TABLA MAESTRA DE RENDIMIENTO")
-    print("=" * 115)
-    print(f"{'Escenario':<32} | {'Pos Final':<10} | {'Tiempo Total':<13} | {'Dif. Ganador':<13} | {'Estrategia de Paradas (Vuelta: Neumático)':<35}")
-    print("-" * 115)
-    print(f"{f'Baseline Humano ({driver_name} Real)':<32} | P{real_results['final_position']:<9} | {real_results['total_time']:<11.3f}s | {real_gap_str:<13} | {real_results['strategy']}")
-    print(f"{'Línea Base Estática (Heurística)':<32} | P{heuristic_results['final_position']:<9} | {heuristic_results['total_time']:<11.3f}s | {heur_gap_str:<13} | {heuristic_results['strategy']}")
-    print(f"{'Agente Inteligente (DRL Det.)':<32} | P{agent_results['final_position']:<9} | {agent_results['total_time']:<11.3f}s | {agent_gap_str:<13} | {agent_results['strategy']}")
-    print("=" * 115 + "\n")
+    delta_agent_vs_real = f"{t_agent - t_real:+.3f}s"
+    delta_agent_vs_heur = f"{t_agent - t_heur:+.3f}s"
+    
+    print("\n" + "=" * 125)
+    print("                                  ELEMENTO 1: TABLA MAESTRA DE RENDIMIENTO (MÉTRICAS ABSOLUTAS)")
+    print("=" * 125)
+    print(f"{'Escenario':<32} | {'Pos Final':<10} | {'Tiempo Total':<13} | {'Delta vs Real':<14} | {'Delta vs Heur':<14} | {'Estrategia de Paradas (Vuelta: Neumático)':<35}")
+    print("-" * 125)
+    print(f"{f'Baseline Humano ({driver_name} Real)':<32} | P{real_results['final_position']:<9} | {t_real:<11.3f}s | {delta_real_vs_real:<14} | {delta_real_vs_heur:<14} | {real_results['strategy']}")
+    print(f"{'Línea Base Estática (Heurística)':<32} | P{heuristic_results['final_position']:<9} | {t_heur:<11.3f}s | {delta_heur_vs_real:<14} | {delta_heur_vs_heur:<14} | {heuristic_results['strategy']}")
+    print(f"{'Agente Inteligente (DRL Det.)':<32} | P{agent_results['final_position']:<9} | {t_agent:<11.3f}s | {delta_agent_vs_real:<14} | {delta_agent_vs_heur:<14} | {agent_results['strategy']}")
+    print("=" * 125 + "\n")
     
     # Generar gráficos
     try:
@@ -439,15 +445,23 @@ def run_compare_suite(model, env, gp_data):
         gp_year = gp_data.get('year', 2024)
         
 
-        # --- ELEMENTO 3: GRÁFICO DE CICLO DE VIDA DEL NEUMÁTICO (DEGRADACIÓN EN S) ---
-        fig_wear = plt.figure(figsize=(10, 6))
-        ax_wear = fig_wear.add_subplot(1, 1, 1)
+        # --- ELEMENTO 3: GRÁFICO DE STINTS Y EVOLUCIÓN DEL DESGASTE DE NEUMÁTICOS ---
+        plt.style.use('dark_background')
+        fig_wear = plt.figure(figsize=(11, 6.5), facecolor='#111111')
+        ax_wear = fig_wear.add_subplot(1, 1, 1, facecolor='#111111')
         
+        # Grid and spines configuration for premium look
+        ax_wear.grid(True, which='both', linestyle=':', color='#333333', alpha=0.5)
+        for spine in ax_wear.spines.values():
+            spine.set_color('#444444')
+            spine.set_linewidth(1.2)
+            
         def plot_wear_stints(ax, laps_data, linestyle, linewidth, label_prefix, alpha=1.0):
             stints = []
             current_stint = []
             for entry in laps_data:
-                if not current_stint or entry['compound'] == current_stint[-1]['compound']:
+                # Group by compound and ensure wear is increasing (resets on pit stops)
+                if not current_stint or (entry['compound'] == current_stint[-1]['compound'] and entry['wear'] >= current_stint[-1]['wear']):
                     current_stint.append(entry)
                 else:
                     stints.append(current_stint)
@@ -456,44 +470,64 @@ def run_compare_suite(model, env, gp_data):
                 stints.append(current_stint)
                 
             compound_colors = {
-                "SOFT": "#E10600",
-                "MEDIUM": "#FAD02C",
-                "HARD": "#777777"
+                "SOFT": "#E10600",     # F1 Red
+                "MEDIUM": "#FAD02C",   # F1 Yellow
+                "HARD": "#FFFFFF"      # F1 White (requested by user)
             }
             
-            for stint in stints:
+            total_laps = float(gp_data.get('total_laps', 66))
+            
+            for i, stint in enumerate(stints):
                 stint_laps = [e['lap'] for e in stint]
-                stint_offsets = [e['offset'] for e in stint]
+                # Normalize wear between 0.0 and 1.0 (laps_on_tire / total_laps)
+                stint_wears = [float(e['wear']) / total_laps for e in stint]
                 comp = stint[0]['compound']
                 
-                ax.plot(stint_laps, stint_offsets, color=compound_colors.get(comp, "#000000"), 
+                # Prepend starting point for the stint (lap 0 at 0 wear, or previous pit lap at 0 wear)
+                if i == 0:
+                    stint_laps.insert(0, 0)
+                    stint_wears.insert(0, 0.0)
+                else:
+                    prev_last_lap = stints[i-1][-1]['lap']
+                    stint_laps.insert(0, prev_last_lap)
+                    stint_wears.insert(0, 0.0)
+                
+                # Append vertical drop to 0 if not the last stint
+                if i < len(stints) - 1:
+                    last_lap = stint[-1]['lap']
+                    stint_laps.append(last_lap)
+                    stint_wears.append(0.0)
+                
+                ax.plot(stint_laps, stint_wears, color=compound_colors.get(comp, "#888888"), 
                         linestyle=linestyle, linewidth=linewidth, alpha=alpha)
                         
-        # Dibujamos primero la línea del piloto real (más gruesa y discontinua en el fondo)
-        plot_wear_stints(ax_wear, real_results['laps_data'], linestyle='--', linewidth=4.0, label_prefix='Real', alpha=0.7)
-        # Dibujamos encima la línea del agente (más fina y continua en primer plano)
-        plot_wear_stints(ax_wear, agent_results['laps_data'], linestyle='-', linewidth=2.0, label_prefix='Agent', alpha=1.0)
+        # Dibujamos la línea del piloto real (discontinua)
+        plot_wear_stints(ax_wear, real_results['laps_data'], linestyle='--', linewidth=2.5, label_prefix='Real', alpha=0.6)
+        # Dibujamos la línea heurística (punteada)
+        plot_wear_stints(ax_wear, heuristic_results['laps_data'], linestyle=':', linewidth=2.0, label_prefix='Heur', alpha=0.5)
+        # Dibujamos la línea del agente (sólida)
+        plot_wear_stints(ax_wear, agent_results['laps_data'], linestyle='-', linewidth=2.5, label_prefix='Agent', alpha=1.0)
         
-        ax_wear.set_title(f"Ciclo de Vida del Neumático - {gp_name} {gp_year}", fontsize=13, fontweight='bold', pad=12)
-        ax_wear.set_xlabel("Vuelta", fontsize=10)
-        ax_wear.set_ylabel("Penalización por Desgaste (segundos / vuelta)", fontsize=10)
-        ax_wear.set_xlim(1, 66)
-        max_offset = max(max(d['offset'] for d in agent_results['laps_data']), max(d['offset'] for d in real_results['laps_data']))
-        ax_wear.set_ylim(0, max_offset + 0.5)
-        ax_wear.grid(True, linestyle=':', alpha=0.6)
+        ax_wear.set_title(f"Stints y Evolución del Desgaste de Neumáticos\nGP de {gp_name} {gp_year}", fontsize=14, fontweight='bold', pad=15, color='#FFFFFF')
+        ax_wear.set_xlabel("Vuelta de Carrera", fontsize=11, color='#FFFFFF', labelpad=8)
+        ax_wear.set_ylabel("Desgaste del Neumático (tire_wear: 0.0 a 1.0)", fontsize=11, color='#FFFFFF', labelpad=8)
+        ax_wear.set_xlim(0, int(gp_data.get('total_laps', 66)))
+        ax_wear.set_ylim(-0.02, 1.02)
+        ax_wear.tick_params(colors='#AAAAAA', labelsize=10)
         
         legend_elements = [
-            Line2D([0], [0], color='black', linestyle='-', linewidth=2.0, label='Agente DRL'),
-            Line2D([0], [0], color='black', linestyle='--', linewidth=4.0, alpha=0.7, label=f'Piloto Real ({driver_name})'),
+            Line2D([0], [0], color='#AAAAAA', linestyle='-', linewidth=2.5, label='Agente DRL (Sólido)'),
+            Line2D([0], [0], color='#AAAAAA', linestyle='--', linewidth=2.5, alpha=0.6, label=f'Piloto Real ({driver_name} - Guión)'),
+            Line2D([0], [0], color='#AAAAAA', linestyle=':', linewidth=2.0, alpha=0.5, label='Línea Base Estática (Heurística - Puntos)'),
             Line2D([0], [0], color='#E10600', lw=4, label='SOFT (Rojo)'),
             Line2D([0], [0], color='#FAD02C', lw=4, label='MEDIUM (Amarillo)'),
-            Line2D([0], [0], color='#777777', lw=4, label='HARD (Gris)')
+            Line2D([0], [0], color='#FFFFFF', lw=4, label='HARD (Blanco)')
         ]
-        ax_wear.legend(handles=legend_elements, loc='upper left', frameon=True)
+        ax_wear.legend(handles=legend_elements, loc='upper left', frameon=True, facecolor='#1E1E1E', edgecolor='#444444')
         plt.tight_layout()
         
         plot_path_wear = os.path.join(plot_dir, "tire_degradation.png")
-        plt.savefig(plot_path_wear, dpi=300)
+        plt.savefig(plot_path_wear, dpi=300, facecolor='#111111')
         plt.close()
         print(f"[OK] Gráfico de ciclo de vida del neumático guardado en '{plot_path_wear}'")
         

@@ -74,7 +74,7 @@ class FuelModel:
 class PitStopModel:
     """Model for timing and executing pit stops."""
 
-    def __init__(self, pit_loss_seconds: float = 20.0):
+    def __init__(self, pit_loss_seconds: float = 23.0):
         self.pit_loss_seconds = pit_loss_seconds
 
     def pit_time_loss_seconds(self, car: "Car", race: "Race") -> float:
