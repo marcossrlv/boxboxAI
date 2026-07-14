@@ -94,7 +94,10 @@ def moving_average(data, window_size=50):
 
 
 def plot_training_progress(callback):
-    """Plot training progress using matplotlib with clean and unified styling."""
+    """Plot training progress using matplotlib with clean and unified styling, saving separate plots in a 'plots' folder."""
+    import os
+    os.makedirs('plots', exist_ok=True)
+    
     stats = callback.get_training_stats()
     rewards = stats['episode_rewards']
     positions = stats['episode_positions']
@@ -116,8 +119,6 @@ def plot_training_progress(callback):
         except OSError:
             plt.style.use('default')
             
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 8.5), sharex=True)
-    
     # Calculate moving averages (adapt window size based on amount of data)
     window_size = min(50, max(5, len(rewards) // 10))
     smoothed_rewards = moving_average(rewards, window_size=window_size)
@@ -126,29 +127,39 @@ def plot_training_progress(callback):
     # ------------------
     # Plot 1: Cumulative Reward Curve
     # ------------------
+    fig1 = plt.figure(figsize=(10, 6))
+    ax1 = fig1.add_subplot(1, 1, 1)
     # Raw episode rewards in a lighter color
     ax1.plot(timesteps, rewards, color='#a1c9f4', alpha=0.4, label='Raw Episode Reward')
     # Smoothed moving average in a thicker, darker color
     ax1.plot(timesteps, smoothed_rewards, color='#1f77b4', linewidth=2.5, 
              label=f'Moving Average (window={window_size})')
     
-    ax1.set_title('Cumulative Reward Curve', fontsize=14, fontweight='bold', pad=12)
-    ax1.set_ylabel('Total Reward per Episode', fontsize=12)
+    ax1.set_title('Cumulative Reward Curve', fontsize=13, fontweight='bold', pad=12)
+    ax1.set_xlabel('Timesteps', fontsize=11)
+    ax1.set_ylabel('Total Reward per Episode', fontsize=11)
     ax1.legend(loc='lower right', frameon=True, facecolor='white', edgecolor='none')
     ax1.grid(True, linestyle='--', alpha=0.6)
+    
+    plt.tight_layout()
+    plt.savefig('plots/cumulative_rewards.png', dpi=300)
+    plt.close()
+    print("[OK] Cumulative reward curve saved as 'plots/cumulative_rewards.png'")
     
     # ------------------
     # Plot 2: Evolution of the Average Final Position
     # ------------------
+    fig2 = plt.figure(figsize=(10, 6))
+    ax2 = fig2.add_subplot(1, 1, 1)
     # Raw final positions
     ax2.plot(timesteps, positions, color='#ffbeb2', alpha=0.4, label='Raw Final Position')
     # Smoothed final position
     ax2.plot(timesteps, smoothed_positions, color='#d62728', linewidth=2.5, 
              label=f'Moving Average (window={window_size})')
     
-    ax2.set_title('Evolution of the Average Final Position', fontsize=14, fontweight='bold', pad=12)
-    ax2.set_xlabel('Timesteps', fontsize=12)
-    ax2.set_ylabel('Final Position (1st at Top)', fontsize=12)
+    ax2.set_title('Evolution of the Average Final Position', fontsize=13, fontweight='bold', pad=12)
+    ax2.set_xlabel('Timesteps', fontsize=11)
+    ax2.set_ylabel('Final Position (1st at Top)', fontsize=11)
     
     # Y-axis configuration: 1 to 20, with 1 at the top
     ax2.set_ylim(20.5, 0.5)  # Inverted Y-axis so 1st place is at the top
@@ -157,10 +168,10 @@ def plot_training_progress(callback):
     ax2.legend(loc='upper right', frameon=True, facecolor='white', edgecolor='none')
     ax2.grid(True, linestyle='--', alpha=0.6)
     
-    # Adjust spacing and save
     plt.tight_layout()
-    plt.savefig('training_progress.png', dpi=300)
-    # plt.show() removed to prevent blocking in background execution
+    plt.savefig('plots/average_positions.png', dpi=300)
+    plt.close()
+    print("[OK] Average position evolution saved as 'plots/average_positions.png'")
 
 
 def main():
@@ -207,7 +218,7 @@ def main():
     
     # Train the model
     print("Training started...")
-    model.learn(total_timesteps=1500000, callback=callback)
+    model.learn(total_timesteps=2000000, callback=callback)
     print("Training completed!")
     
     # Save the model
@@ -217,9 +228,9 @@ def main():
     # Plot training progress
     plot_training_progress(callback)
     
-    # Evaluate the trained model
-    print("\nEvaluating trained model...")
-    eval_rewards, eval_lengths, eval_positions = evaluate_model(model, env, n_episodes=20, deterministic=False, gp_data=gp_data)
+    # Evaluate the trained model (Monte Carlo Study)
+    print("\nEvaluating trained model (Monte Carlo Study on Stochastic Environment)...")
+    eval_rewards, eval_lengths, eval_positions = evaluate_model(model, env, n_episodes=100, deterministic=True, gp_data=gp_data)
     
 
     
