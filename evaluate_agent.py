@@ -467,42 +467,6 @@ def run_compare_suite(model, env, gp_data):
         gp_name = gp_data.get('name', 'Spanish Grand Prix')
         gp_year = gp_data.get('year', 2024)
         
-        # --- ELEMENTO 2: GRÁFICO DE TELEMETRÍA ESTRATÉGICA (LAP CHART - GAP AL LÍDER) ---
-        fig_pos = plt.figure(figsize=(10, 6))
-        ax_pos = fig_pos.add_subplot(1, 1, 1)
-        
-        gap_real = [d['gap'] for d in real_results['laps_data']]
-        gap_agent = [d['gap'] for d in agent_results['laps_data']]
-        
-        ax_pos.plot(laps, gap_real, color='#FF9F1C', linewidth=2.5, linestyle='-', label=f'Baseline Humano ({driver_name} Real)')
-        ax_pos.plot(laps, gap_agent, color='#2EC4B6', linewidth=3.0, linestyle='-', label='Agente Inteligente (DRL Det.)')
-        
-        # Marcadores visuales en las líneas indicando las paradas
-        for lap, comp in real_results['pit_stops']:
-            gap_val = gap_real[lap-1]
-            ax_pos.scatter(lap, gap_val, color='#FF9F1C', edgecolor='black', s=100, zorder=5, marker='^')
-            ax_pos.text(lap, gap_val + 0.8, f"Pit {comp}", color='#FF9F1C', fontsize=9, fontweight='bold', ha='center')
-            
-        for lap, comp in agent_results['pit_stops']:
-            gap_val = gap_agent[lap-1]
-            ax_pos.scatter(lap, gap_val, color='#2EC4B6', edgecolor='black', s=130, zorder=5, marker='*')
-            ax_pos.text(lap, gap_val - 1.2, f"Pit {comp}", color='#2EC4B6', fontsize=10, fontweight='bold', ha='center')
-            
-        ax_pos.set_title(f"Brecha de Tiempo con el Líder - {gp_name} {gp_year}", fontsize=13, fontweight='bold', pad=12)
-        ax_pos.set_xlabel("Vuelta", fontsize=10)
-        ax_pos.set_ylabel("Diferencia de Tiempo con el Líder (segundos)", fontsize=10)
-        ax_pos.set_xlim(1, 66)
-        max_gap_found = max(max(gap_real), max(gap_agent))
-        ax_pos.set_ylim(-2.0, max_gap_found + 5.0)
-        ax_pos.invert_yaxis()  # El líder (0 segundos) arriba, los retrasos abajo
-        ax_pos.grid(True, linestyle=':', alpha=0.6)
-        ax_pos.legend(loc='lower left', frameon=True, facecolor='white', framealpha=0.9)
-        plt.tight_layout()
-        
-        plot_path_pos = os.path.join(plot_dir, "lap_chart_gap.png")
-        plt.savefig(plot_path_pos, dpi=300)
-        plt.close()
-        print(f"[OK] Gráfico de brecha con el líder guardado en '{plot_path_pos}'")
 
         # --- ELEMENTO 3: GRÁFICO DE CICLO DE VIDA DEL NEUMÁTICO (DEGRADACIÓN EN S) ---
         fig_wear = plt.figure(figsize=(10, 6))
