@@ -178,7 +178,7 @@ class RaceGymEnv(gym.Env):
             action_int = int(action)
 
         # Step the race (cars move automatically)
-        race_state = self.race.step_with_action(agent_action=action_int)
+        race_state = self.race.step(agent_action=action_int)
 
         # Enriquecer race_state con el compuesto actual de cada coche
         # (necesario para el logger; Race no lo incluye por defecto)

@@ -262,14 +262,7 @@ class Race:
             car.total_laps = track.laps
             car.fuel_mass = self.fuel_model.initial_fuel_mass(track)
         
-    def step(self) -> dict:
-        """
-        Execute one time step of the race (one lap for all cars)
-        Returns race state information
-        """
-        return self.step_with_action(agent_action=None)
-
-    def step_with_action(self, agent_action: Optional[int] = None) -> dict:
+    def step(self, agent_action: Optional[int] = None) -> dict:
         """Execute one time step (one lap) with optional agent pit action."""
         self.time_step += 1
 
